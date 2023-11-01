@@ -73,29 +73,40 @@ def list_items_in_folder(folder_id, access_token, base_url):
 
 def process_items(items, folder_name, access_token, base_url):
     """Process items recursively, listing PDF files and their download URLs."""
+    folder_files_dict = {}
     file_identifiers = []
     file_link_dict = {}
 
     for item in items:
         if 'folder' in item:
-            _, child_identifiers, child_links = process_items(
+            child_folder_files_dict, child_identifiers, child_links = process_items(
                 list_items_in_folder(item['id'], access_token, base_url),
                 os.path.join(folder_name, item['name']),
                 access_token,
                 base_url
             )
+            folder_files_dict.update(child_folder_files_dict)
             file_identifiers.extend(child_identifiers)
             file_link_dict.update(child_links)
         elif 'file' in item and item['name'].endswith('.pdf'):
+            # Add the file to folder_files_dict
+            folder_files_dict.setdefault(folder_name, []).append(item['name'])
+            # Add the file's identifier to the list
             file_identifiers.append(item['name'])
+            # Add the file's download URL to file_link_dict
             file_link_dict[item['name']] = item['@microsoft.graph.downloadUrl']
 
-    return None, file_identifiers, file_link_dict
+    return folder_files_dict, file_identifiers, file_link_dict
+
 
 
 def download_pdf_files(folder_id, folder_name, access_token, base_url):
     items = list_items_in_folder(folder_id, access_token, base_url)
-    return process_items(items, folder_name, access_token, base_url)
+    folder_files_dict, file_identifiers, file_link_dict = process_items(items, folder_name, access_token, base_url)
+    return folder_files_dict, file_identifiers, file_link_dict
+
+
+
 
 # def clean_local_directory(all_files):
 #     root_directory_path = r'C:\Users\Gyani\PycharmProjects\sharepointfinal\local_directory'
