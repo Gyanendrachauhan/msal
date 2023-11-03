@@ -7,7 +7,6 @@ import urllib.parse
 
 file_link_dict = {}
 
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 load_dotenv()
@@ -39,9 +38,6 @@ def get_access_token():
         return None
 
 
-
-
-
 def fetch_pdf_content(file_id, access_token, base_url):
     """Fetches the content of a file from SharePoint."""
     file_url = f'{base_url}/{file_id}/content'
@@ -54,9 +50,6 @@ def fetch_pdf_content(file_id, access_token, base_url):
     except requests.HTTPError as err:
         logger.error(f"Failed to download file with ID {file_id}. Error: {err}")
         return None
-
-
-
 
 def list_items_in_folder(folder_id, access_token, base_url):
     """Fetch items in a given folder."""
@@ -98,25 +91,10 @@ def process_items(items, folder_name, access_token, base_url):
 
     return folder_files_dict, file_identifiers, file_link_dict
 
-
-
 def download_pdf_files(folder_id, folder_name, access_token, base_url):
     items = list_items_in_folder(folder_id, access_token, base_url)
     folder_files_dict, file_identifiers, file_link_dict = process_items(items, folder_name, access_token, base_url)
     return folder_files_dict, file_identifiers, file_link_dict
-
-
-
-
-# def clean_local_directory(all_files):
-#     root_directory_path = r'C:\Users\Gyani\PycharmProjects\sharepointfinal\local_directory'
-#     for foldername, _, filenames in os.walk(root_directory_path):
-#         for filename in filenames:
-#             rel_path = os.path.relpath(os.path.join(foldername, filename), root_directory_path)
-#             if rel_path not in all_files:
-#                 os.remove(os.path.join(foldername, filename))
-
-
 
 def upload_pdfs_to_server(selected_web_urls, access_token, base_url):
     pdf_contents = []
@@ -133,6 +111,7 @@ def upload_pdfs_to_server(selected_web_urls, access_token, base_url):
             logger.error(f"Failed to fetch content from {web_url}. Error: {file_response.text}")
 
     upload_response = upload(pdf_contents)
+    # print(upload_response)
 
     if isinstance(upload_response, dict) and "error" in upload_response:
         logger.error(f"Upload failed with error: {upload_response['error']}")
@@ -142,4 +121,5 @@ def upload_pdfs_to_server(selected_web_urls, access_token, base_url):
 
     logger.info("Upload successful!")
     return jsonify({"message": "Upload successful!"}), 200
+
 

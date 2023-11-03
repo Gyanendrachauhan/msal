@@ -64,12 +64,13 @@ def webhook():
     payload = request.form
     data = payload['intent']
     data1 = json.loads(data)
+    # print(data1)
     action = data1['fulfillment']['action']
     parameters = data1['fulfillment']['parameters']
     if action == "action-vecv-user-pre-login":
             chatId = data1["chatId"]
             auth_li[chatId] = {}
-            res_json = {"id":3,"message":"Get verified from AD","fulfillment":{"action":"action-vecv-user-pre-login","parameters":{"details":"{previousValue:2}"},"previousIntent":2},"metadata":{"payload":[{"url":f"https://973d-2401-4900-81ed-3aff-c824-af8b-79fb-7269.ngrok-free.app/login?cid={chatId}","name":". Go to AD Login page","image":"https://i.ibb.co/KNFsKWX/images.png","type":"link","value":"Go to AD Login page","trigger":210,"openLinkInNewTab":True}],"templateId":6},"userInput":False}
+            res_json = {"id":3,"message":"Get verified from AD","fulfillment":{"action":"action-vecv-user-pre-login","parameters":{"details":"{previousValue:2}"},"previousIntent":2},"metadata":{"payload":[{"url":f"https://b832-106-221-229-17.ngrok-free.app/login?cid={chatId}","name":". Go to AD Login page","image":"https://i.ibb.co/KNFsKWX/images.png","type":"link","value":"Go to AD Login page","trigger":210,"openLinkInNewTab":True}],"templateId":6},"userInput":False}
 
             return res_json
     elif action == "action-user-vecv-login":
@@ -180,47 +181,22 @@ def webhook():
         options_list = [{"value": filename, "label": filename} for filename in all_filenames]
 
         return jsonify({
-        "id": 30200,  # Replace NEW_ID with the ID you choose for this intent
-        "message": f"Select files from the folder: {selected_folder_name}",
-        "metadata": {
-            "message": "Select the files",
-            "payload": [
-                {
-                    "data": {
-                        "name": "Checkbox",
-                        "title": "Checkbox",
-                        "options": options_list
-                    },
-                    "name": "Checkbox",
-                    "type": "checkbox",
-                    "validation": "required"
-                },
-                {
-                    "type": "submit",
-                    "label": "Submit",
-                    "message": "Response Submitted",
-                    "trigger": 3020,  # This will trigger the next intent after file selection
-                    "formAction": "/",
-                    "requestType": "POST"
-                },
-                {
-                    "type": "cancel",
-                    "label": "Cancel",
-                    "message": "Cancelled",
-                    "trigger": 30  # Replace CANCEL_TRIGGER with the ID you choose for cancel
-                }
-            ],
-            "templateId": 13,
-            "contentType": "300"
+        "id": 30200,
+        "message": "This is Multiple-Auto Suggestion Intent",
+        "trigger": 3020,
+        "userInput": True,
+        "inputOptions": {
+            "type": "auto-suggest",
+            "options": options_list,
+            "multiple": True,
+            "optional": False
+        },"fulfillment": {
+        "action": "action-filename",
+        "parameters": {
+            "faq": "{previousValue:302}"
         },
-        "userInput": False,
-        "fulfillment": {
-            "action": "action-filename",
-            "parameters": {
-                "selectedFiles": "{previousValue:302}"  # Replace NEW_ID with the ID you chose for this intent
-            },
-            "previousIntent":302  # Replace NEW_ID with the ID you chose for this intent
-        }
+        "previousIntent": 302
+    }
     })
 
 
@@ -230,15 +206,14 @@ def webhook():
 
 
         # file_url_dict  = download_pdf_files(folder_id, folder_name, access_token,base_url)
-        selected_web_urls = [file_link_dict[filename] for filename in parameters['faqans']['Checkbox'] if filename in file_link_dict]
+        selected_web_urls = [file_link_dict[filename['label']] for filename in parameters['faqans'] if filename['label'] in file_link_dict]
         # print(selected_web_urls)
         response = upload_pdfs_to_server(selected_web_urls, access_token, base_url)
         # response_selected_filenames = "".join("<li>"+i+"</li>" for i in parameters['faqans']['Checkbox'])
-        response_selected_filenames = "".join("<li>"+i+"</li>" for i in parameters['faqans']['Checkbox'] if i in file_link_dict)
+        response_selected_filenames = "".join("<li>"+i['label']+"</li>" for i in parameters['faqans'] if i['label'] in file_link_dict)
         print("DEBUG: response_selected_filenames contents:", response_selected_filenames)
 
         if response:
-
             return jsonify({
                 "id": 3020,
                 "message": "<ul>" + response_selected_filenames + "</ul> Uploaded and trained successfully",
